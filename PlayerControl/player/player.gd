@@ -48,7 +48,9 @@ func change_state(new_state: int) -> void:
 			change_state(IDLE)
 		CROUCH:
 			anim.play("crouch")
-#		 RUN:
+		SHIELD:
+			anim.play("shield")
+			
 #            anim.play("run")
 #        RUN:
 #            anim.play("run")
@@ -67,6 +69,7 @@ func _physics_process(delta):
 			else:
 				change_state(IDLE)
 		CROUCH:
+			velocity.x = 0
 			if Input.is_action_just_released("ui_down"):
 				change_state(IDLE)
 		DEAD:
@@ -76,6 +79,11 @@ func _physics_process(delta):
 				change_state(LANDING)
 			pass
 		HIT:
+			pass
+		SHIELD:
+			velocity.x = 0
+			if not Input.is_action_pressed("shield"):
+				change_state(IDLE)
 			pass
 		IDLE:
 			velocity.x = 0
@@ -119,8 +127,8 @@ func _physics_process(delta):
 			if Input.is_action_just_pressed("attack"):
 				change_state(ATTACK)
 				return
-			if Input.is_action_just_pressed("crouch"):
-				change_state(CROUCH)
+			if Input.is_action_just_pressed("shield"):
+				change_state(SHIELD)
 		SHIELD:
 			pass
 		WALL_SLIDE:

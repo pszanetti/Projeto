@@ -26,29 +26,29 @@ func _ready():
 	pass # Replace with function body.
 
 func change_state(new_state: int) -> void:
-    if StateMachine == new_state:
-        return
-        
-    StateMachine = new_state
-	# Gerencia qual animação toca ao entrar em cada estado
-    match StateMachine:
-        IDLE:
-            anim.play("idle")
-        RUN:
-            anim.play("run")
-        FALL:
-            anim.play("fall")
-        JUMP:
-            anim.play("jump")
-        LANDING:
-            anim.play("landing")
-            yield(anim, "animation_finished")
-            change_state(IDLE)
-#        RUN:
-#            anim.play("run")
-#        RUN:
-#            anim.play("run")
-#        RUN:
+	if StateMachine == new_state:
+		return   
+	StateMachine = new_state
+	match StateMachine:
+		IDLE:
+			anim.play("idle")
+		RUN:
+			anim.play("run")
+		FALL:
+			anim.play("fall")
+		JUMP:
+			anim.play("jump")
+		LANDING:
+			anim.play("landing")
+			yield(anim, "animation_finished")
+			change_state(IDLE)
+		ATTACK:   
+			anim.play("attack")
+			yield(anim, "animation_finished")
+			change_state(IDLE)
+		CROUCH:
+			anim.play("crouch")
+#		 RUN:
 #            anim.play("run")
 #        RUN:
 #            anim.play("run")
@@ -59,10 +59,16 @@ func change_state(new_state: int) -> void:
 func _physics_process(delta):
 	match StateMachine:
 		ATTACK:
-			
-			pass
+			velocity.x = 0
+			anim.play("attack")
+			yield(anim, "animation_finished")
+			if Input.is_action_pressed("ui_left") or Input.is_action_pressed("ui_right"):
+				change_state(RUN)
+			else:
+				change_state(IDLE)
 		CROUCH:
-			pass
+			if Input.is_action_just_released("ui_down"):
+				change_state(IDLE)
 		DEAD:
 			pass
 		FALL:
@@ -72,12 +78,19 @@ func _physics_process(delta):
 		HIT:
 			pass
 		IDLE:
+			velocity.x = 0
 			# Retorna -1 (esquerda), 0 (parado) ou 1 (direita)
 			if Input.is_action_pressed("ui_right") or Input.is_action_pressed("ui_left"):
 				change_state(RUN)
 			if Input.is_action_just_released("ui_select"):
 				velocity.y = JUMP_FORCE
 				change_state(JUMP)
+			if Input.is_action_just_pressed("attack"):
+				velocity.x = 0
+				change_state(ATTACK)
+			if Input.is_action_just_pressed("ui_down"):
+				change_state(CROUCH)
+			
 		JUMP:
 			direction = 0
 #			if velocity.y > 0:
@@ -97,17 +110,22 @@ func _physics_process(delta):
 				direction = -1
 			else:
 				direction = 0
+			velocity.x = direction * SPEED
 			if direction == 0: 
 				change_state(IDLE)
 			if Input.is_action_just_pressed("ui_select"):
 				velocity.y = JUMP_FORCE
 				change_state(JUMP)
-			velocity.x = direction * SPEED
+			if Input.is_action_just_pressed("attack"):
+				change_state(ATTACK)
+				return
+			if Input.is_action_just_pressed("crouch"):
+				change_state(CROUCH)
 		SHIELD:
 			pass
 		WALL_SLIDE:
 			pass
-			
+	
 	apply_gravity(delta)
 	velocity = move_and_slide(velocity, Vector2.UP)
 	if velocity.y > 0:
@@ -116,3 +134,4 @@ func _physics_process(delta):
 	
 func apply_gravity(delta):
 	velocity.y = velocity.y + GRAVITY * delta
+

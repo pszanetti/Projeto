@@ -18,7 +18,7 @@ Player (KinemmaticBody2D)
  ├── HitArea (Area2D)
  │    ├── HitCollision(CollisionShape2D)
  ├── Camera2D
- ├── DirectionPiviot (Node2D)
+ ├── DirectionPivot (Node2D)
  │    ├── WallRayCast (RayCast2D)
  │    ├─── AttackArea (Area2D)
  │    │     └── CollisionAttack (CollisionShape2D)

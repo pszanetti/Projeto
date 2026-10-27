@@ -37,6 +37,7 @@ func change_state(new_state: int) -> void:
 		FALL:
 			anim.play("fall")
 		JUMP:
+			velocity.y = JUMP_FORCE
 			anim.play("jump")
 		LANDING:
 			anim.play("landing")
@@ -90,19 +91,12 @@ func _physics_process(delta):
 			# Retorna -1 (esquerda), 0 (parado) ou 1 (direita)
 			if Input.is_action_pressed("ui_right") or Input.is_action_pressed("ui_left"):
 				change_state(RUN)
-			if Input.is_action_just_released("ui_select"):
-				velocity.y = JUMP_FORCE
-				change_state(JUMP)
-			if Input.is_action_just_pressed("attack"):
-				velocity.x = 0
-				change_state(ATTACK)
-			if Input.is_action_just_pressed("ui_down"):
-				change_state(CROUCH)
+			process_ground_inputs()
 			
 		JUMP:
 			direction = 0
-#			if velocity.y > 0:
-#				change_state(FALL)
+			if velocity.y > 0:
+				change_state(FALL)
 		LANDING:
 			velocity.x = 0
 			anim.play("landing")
@@ -121,14 +115,7 @@ func _physics_process(delta):
 			velocity.x = direction * SPEED
 			if direction == 0: 
 				change_state(IDLE)
-			if Input.is_action_just_pressed("ui_select"):
-				velocity.y = JUMP_FORCE
-				change_state(JUMP)
-			if Input.is_action_just_pressed("attack"):
-				change_state(ATTACK)
-				return
-			if Input.is_action_just_pressed("shield"):
-				change_state(SHIELD)
+			process_ground_inputs()
 		SHIELD:
 			pass
 		WALL_SLIDE:
@@ -143,3 +130,15 @@ func _physics_process(delta):
 func apply_gravity(delta):
 	velocity.y = velocity.y + GRAVITY * delta
 
+# Função que agrupa todas as transições permitidas enquanto está no chão
+func process_ground_inputs() -> bool:
+	if Input.is_action_just_pressed("ui_select") and is_on_floor():
+		change_state(JUMP)
+		return true
+	if Input.is_action_just_pressed("attack"):
+		change_state(ATTACK)
+		return true
+	if Input.is_action_pressed("shield"):
+		change_state(SHIELD)
+		return true
+	return false

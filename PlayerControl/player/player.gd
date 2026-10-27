@@ -41,6 +41,8 @@ func change_state(new_state: int) -> void:
 			anim.play("landing")
 		ATTACK:   
 			anim.play("attack")
+			yield(anim, "animation_finished")
+			change_state(IDLE)
 		CROUCH:
 			anim.play("crouch")
 		SHIELD:
@@ -60,6 +62,8 @@ func _physics_process(delta):
 		if Input.is_action_pressed("shield"):
 			change_state(SHIELD)
 			return
+		if Input.is_action_pressed("ui_down"):
+			change_state(CROUCH)
 
 	# 2. Comportamento específico de cada estado
 	match StateMachine:
